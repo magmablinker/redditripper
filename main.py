@@ -2,7 +2,7 @@ import requests as req
 import os
 import shutil
 import threading
-from time import time
+from time import time, sleep
 from math import ceil
 
 if os.name == "nt": # Check if Windows or Linux
@@ -16,6 +16,7 @@ class Download():
         self.data = {}
         self.fileTypeList = [ "jpg", "jpeg", "png", "gif" ]
         self.timeStarted = time()
+        self.files = 0
 
     def getPostsBySub(self):
         for sub in self.subs:
@@ -28,6 +29,7 @@ class Download():
                 continue
 
             self.data[sub] = [ data['data']['url'] for data in res['data']['children'] ]
+            self.files += len(self.data[sub])
 
     def makeSubDirs(self):
         for sub in self.subs:
@@ -37,6 +39,10 @@ class Download():
                 os.makedirs(path)
 
     def downloadAllImages(self):
+        print(  "\n***********************************************",
+                "[+] Starting download of %d images in 2 seconds" %(self.files),
+                "***********************************************\n", sep="\n")
+        sleep(2)
         for sub in self.subs:
             t = []
             for url in self.data[sub]:
@@ -57,14 +63,13 @@ class Download():
 
                 t.append(threading.Thread(target=self.downloadImage, args=(url, path,)))
 
-            for thread in t:
-                thread.start()
+            print("[+] Starting threads")
+            [ thread.start() for thread in t ]
 
-            try:
-                t[len(t)-1].join()
-            except Exception as e:
-                continue
+            print("[+] Waiting for threads of sub %s to finish" %(sub))
+            [ thread.join() for thread in t ]
 
+            print("[+] Threads have finished, continuing")
 
     def downloadImage(self, url, path):
         try:
@@ -85,7 +90,9 @@ class Download():
                 print("[-] Writing %s failed" %(path))
 
     def printEndTime(self):
-        print("[+] Finished downloading {} subredddits in {} seconds".format(len(self.subs),(ceil((time( ) - self.timeStarted) * 100) / 100)))
+        print(  "\n*****************************************************",
+                "[+] Finished downloading {} subredddits in {} seconds".format(len(self.subs),(ceil((time( ) - self.timeStarted) * 100) / 100)),
+                "*****************************************************", sep="\n")
 
 def main():
     dl = Download()
