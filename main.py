@@ -2,6 +2,8 @@ import requests as req
 import os
 import shutil
 import threading
+from time import time
+from math import ceil
 
 if os.name == "nt": # Check if Windows or Linux
     os.system("cls")
@@ -13,6 +15,7 @@ class Download():
         self.subs = [ sub.rstrip("\n") for sub in open("subreddits.txt") ]
         self.data = {}
         self.fileTypeList = [ "jpg", "jpeg", "png", "gif" ]
+        self.timeStarted = time()
 
     def getPostsBySub(self):
         for sub in self.subs:
@@ -81,11 +84,15 @@ class Download():
         except Exception as e:
                 print("[-] Writing %s failed" %(path))
 
+    def printEndTime(self):
+        print("[+] Finished downloading {} subredddits in {} seconds".format(len(self.subs),(ceil((time( ) - self.timeStarted) * 100) / 100)))
+
 def main():
     dl = Download()
     dl.getPostsBySub()
     dl.makeSubDirs()
     dl.downloadAllImages()
+    dl.printEndTime()
 
 if __name__ == '__main__':
     main()
