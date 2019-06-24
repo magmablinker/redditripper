@@ -15,8 +15,9 @@ class Download():
         self.subs = [ sub.rstrip("\n") for sub in open("subreddits.txt") ]
         self.data = {}
         self.fileTypeList = [ "jpg", "jpeg", "png", "gif" ]
-        self.timeStarted = time()
         self.files = 0
+        self.successful = 0;
+        self.failed = 0;
 
     def getPostsBySub(self):
         for sub in self.subs:
@@ -43,6 +44,7 @@ class Download():
                 "[+] Starting download of %d images in 2 seconds" %(self.files),
                 "***********************************************\n", sep="\n")
         sleep(2)
+        self.timeStarted = time()
         for sub in self.subs:
             t = []
             for url in self.data[sub]:
@@ -56,7 +58,7 @@ class Download():
 
                 try:
                     if filename[(filename.rfind(".")+1):] not in self.fileTypeList:
-                        print("[?] Filetype not allowed")
+                        print("[?] Filetype %s not allowed" %(filename[(filename.rfind(".")+1):]))
                         continue
                 except Exception as e:
                     continue
@@ -76,10 +78,12 @@ class Download():
             result = req.get(url, stream=True)
         except Exception as e:
             print("[-] Fetching image %s failed" %(url))
+            self.failed += 1
             return
 
         if not result.status_code == 200:
             print("[-] URL {} returned {}".format(url, result.status_code))
+            self.failed += 1
             return
 
         try:
@@ -88,10 +92,17 @@ class Download():
                 shutil.copyfileobj(result.raw, f)
         except Exception as e:
                 print("[-] Writing %s failed" %(path))
+                self.failed += 1
+                return
 
-    def printEndTime(self):
-        print(  "\n*****************************************************",
+        self.successful += 1
+
+    def printEndStats(self):
+        print(  "\n+===================================================+",
                 "[+] Finished downloading {} subredddits in {} seconds".format(len(self.subs),(ceil((time( ) - self.timeStarted) * 100) / 100)),
+                "+=====================STATS=========================+",
+                "[+] Downloaded %d files successfully" %(self.successful),
+                "[-] Download failed on %d files" %(self.failed),
                 "*****************************************************", sep="\n")
 
 def main():
@@ -99,7 +110,7 @@ def main():
     dl.getPostsBySub()
     dl.makeSubDirs()
     dl.downloadAllImages()
-    dl.printEndTime()
+    dl.printEndStats()
 
 if __name__ == '__main__':
     main()
