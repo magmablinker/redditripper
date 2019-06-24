@@ -98,9 +98,9 @@ class Download():
         self.successful += 1
 
     def printEndStats(self):
-        print(  "\n+===================================================+",
+        print(  "\n+===================STATS===========================+",
                 "[+] Finished downloading {} subredddits in {} seconds".format(len(self.subs),(ceil((time( ) - self.timeStarted) * 100) / 100)),
-                "+=====================STATS=========================+",
+                "+===================================================+",
                 "[+] Downloaded %d files successfully" %(self.successful),
                 "[-] Download failed on %d files" %(self.failed),
                 "*****************************************************", sep="\n")
