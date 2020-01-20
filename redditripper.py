@@ -14,6 +14,16 @@ class ArgParser():
 
         self.args = self.parser.parse_args()
 
+        self.validate_args()
+
+    
+    def add_arguments(self):
+        self.parser.add_argument('--verbose', action='store_true', help='Print verbose status messages')
+        self.parser.add_argument('-f', "--subreddit_file", help='The file in which the subreddits are stored')
+        self.parser.add_argument('-c', "--category", help='The category, can be hot, top and new')
+
+
+    def validate_args(self):
         if self.args.subreddit_file is not None:
             if not os.path.exists(self.args.subreddit_file):
                 print("The specified subreddit file does not exist!")
@@ -29,12 +39,6 @@ class ArgParser():
                 exit(1)
         else:
             self.args.category = "hot"
-
-    
-    def add_arguments(self):
-        self.parser.add_argument('--verbose', action='store_true', help='Print verbose status messages')
-        self.parser.add_argument('-f', "--subreddit_file", help='The file in which the subreddits are stored')
-        self.parser.add_argument('-c', "--category", help='The category, can be hot, top and new')
 
 
     def get_arguments(self):
