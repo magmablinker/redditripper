@@ -3,6 +3,7 @@ import os
 import shutil
 import threading
 import argparse
+from bs4 import BeautifulSoup as BS
 from time import time, sleep
 from math import ceil
 
@@ -46,7 +47,7 @@ class RedditRipper():
         self.subs = [ sub.rstrip("\n") for sub in open(self.subreddit_file) ]
         self.category = category
         self.data = {}
-        self.file_type_list = [ "jpg", "jpeg", "png", "gif" ]
+        self.file_type_list = [ "jpg", "jpeg", "png", "gif", "mp4" ]
         self.files = 0
         self.successful = 0
         self.failed = 0
@@ -139,7 +140,7 @@ class RedditRipper():
                     continue
 
                 try:
-                    if filename[(filename.rfind(".")+1):] not in self.file_type_list:
+                    if filename[(filename.rfind(".")+1):] not in self.file_type_list and "gfycat" not in url:
                         self.verbose_mode(f"[?] Filetype {filename[(filename.rfind('.')+1):]} not allowed")
                         continue
                 except Exception as e:
@@ -167,30 +168,52 @@ class RedditRipper():
         True or False whether the download was successful or not
     '''
     def download_image(self, url, path):
-        try:
-            result = req.get(url, stream=True)
-        except Exception as e:
-            self.verbose_mode(f"[-] Fetching image {url} failed")
-            self.failed += 1
-            return False
+        if "gfycat" in url:
+            url = self.get_gyfcat_url(url)
 
-        if not result.status_code == 200:
-            self.verbose_mode(f"[-] URL {url} returned {result.status_code}")
-            self.failed += 1
-            return False
-
-        try:
-            self.verbose_mode(f"[+] Writing file {path}")
-            with open(path, "wb") as f:
-                shutil.copyfileobj(result.raw, f)
-        except Exception as e:
-                self.verbose_mode(f"[-] Writing {path} failed")
+        if url is not None:
+            try:
+                result = req.get(url, stream=True)
+            except Exception as e:
+                self.verbose_mode(f"[-] Fetching image {url} failed")
                 self.failed += 1
                 return False
 
-        self.successful += 1
-        return True
+            if result.status_code != 200:
+                self.verbose_mode(f"[-] URL {url} returned {result.status_code}")
+                self.failed += 1
+                return False
 
+            try:
+                self.verbose_mode(f"[+] Writing file {path}")
+                with open(path, "wb") as f:
+                    shutil.copyfileobj(result.raw, f)
+            except Exception as e:
+                    self.verbose_mode(f"[-] Writing {path} failed")
+                    self.failed += 1
+                    return False
+
+            self.successful += 1
+            return True
+        else:
+            return False
+
+
+    def get_gyfcat_url(self, url):
+        self.verbose_mode("[?] Detected gfycat URL")
+
+        try:
+            result = req.get(url)
+        except Exception as e:
+            return None
+
+        if result.status_code != 200:
+            return None
+
+        soup = BS(result.text)
+        videos = soup.find_all("source")
+        print("****")
+        print(videos)
 
     '''
     This method prints verbose messages if enabled
