@@ -55,3 +55,9 @@ reddit_ripper.run()
 ## Dependencies
 * requests
 * bs4
+
+### Install The Dependencies
+You can simply use the requirements.txt file.
+```
+pip install -r requirements.txt
+```
