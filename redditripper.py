@@ -61,13 +61,13 @@ class ArgParser():
                 print("[-] Invalid image output directory. Use --help for help.")
                 exit(1)
         else:
-            self.args.image_output_dir = "downloads/"
+            self.args.image_output_dir = "downloads"
 
     def get_arguments(self):
        return self.args
 
 class RedditRipper():
-    def __init__(self, is_verbose = False, subreddit_file = "subreddits.txt", category = "hot", limit = 100, image_output_dir = "downloads/"):
+    def __init__(self, is_verbose = False, subreddit_file = "subreddits.txt", category = "hot", limit = 100, image_output_dir = "downloads"):
         self.subreddit_file = subreddit_file
         self.subs = [ sub.rstrip("\n") for sub in open(self.subreddit_file) ]
         self.category = category
@@ -284,7 +284,7 @@ class RedditRipper():
     def print_end_stats(self):
         print("",
               "+===================STATS===========================+",
-             f"[+] Finished downloading {len(self.subs)} subredddits in { ceil(((time( ) - self.time_started) * 100) / 100)} seconds",
+             f"[+] Finished downloading {len(self.subs)} subredddits in {ceil(((time( ) - self.time_started) * 100) / 100)} seconds",
               "+===================================================+",
              f"[+] Downloaded {self.successful} files successfully",
              f"[-] Download failed on {self.failed} files",
@@ -300,7 +300,7 @@ def main():
     argparser = ArgParser()
     args = argparser.get_arguments()
 
-    reddit_ripper = RedditRipper(args.verbose, args.subreddit_file, args.category, args.limit)
+    reddit_ripper = RedditRipper(args.verbose, args.subreddit_file, args.category, args.limit, args.image_output_dir)
 
     reddit_ripper.run()
 
