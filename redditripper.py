@@ -236,7 +236,13 @@ class RedditRipper():
             return False
 
     '''
-    This method wi
+    This method downloads a video from gfycat.
+
+    Args:
+        url: the url to the gfycat video.
+
+    Returns:
+        The source url for the media found on the url.
 
     '''
     def get_gyfcat_url(self, url):

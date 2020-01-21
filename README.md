@@ -11,18 +11,24 @@ When you use the --help or -h argument you will
 get a help text I will paste it below:
 
 usage: redditripper.py [-h] [--verbose] [-f SUBREDDIT_FILE] [-c CATEGORY]
-                       [-l LIMIT]
+                       [-l LIMIT] [-o IMAGE_OUTPUT_DIR]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --verbose             Print verbose status messages
+  --verbose             Print verbose status messages. The default value is
+                        False
   -f SUBREDDIT_FILE, --subreddit_file SUBREDDIT_FILE
-                        The file in which the subreddits are stored
+                        The file in which the subreddits are stored. The
+                        default value is "subreddits.txt"
   -c CATEGORY, --category CATEGORY
-                        The category, can be hot, top and new
+                        The category, can be hot, top and new. The default
+                        value is "hot"
   -l LIMIT, --limit LIMIT
                         The amount of posts you want to fetch per subreddit.
-                        Can be from 1 to 100.
+                        Can be from 1 to 100. The default value is 100.
+  -o IMAGE_OUTPUT_DIR, --image_output_dir IMAGE_OUTPUT_DIR
+                        The output directory for downloads. Default is
+                        "downloads/"
 ```
 
 ### As Library
@@ -38,6 +44,7 @@ Args:
     subreddit_file: the file where the subreddits are stored. The default value is 'subreddits.txt'fic
     category: the category, can be 'hot', 'top' and new.
     limit: the amount of posts you want to fetch per subreddit.
+    image_output_dir = the directory in which the subreddit directories and downloads are located. The default is 'downloads/'
 
 Returns:
     The instance of the RedditRipper class
