@@ -170,6 +170,7 @@ class RedditRipper():
     def download_image(self, url, path):
         if "gfycat" in url:
             url = self.get_gyfcat_url(url)
+            path += ".mp4"
 
         if url is not None:
             try:
@@ -211,9 +212,9 @@ class RedditRipper():
             return None
 
         soup = BS(result.text)
-        videos = soup.find_all("source")
-        print("****")
-        print(videos)
+        video = soup.find("source", attrs={'type': 'video/mp4'})
+   
+        return video['src']
 
     '''
     This method prints verbose messages if enabled
