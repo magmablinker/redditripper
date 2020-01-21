@@ -140,7 +140,7 @@ class RedditRipper():
                     continue
 
                 try:
-                    if filename[(filename.rfind(".")+1):] not in self.file_type_list:
+                    if filename[(filename.rfind(".")+1):] not in self.file_type_list and "gfycat" not in url:
                         self.verbose_mode(f"[?] Filetype {filename[(filename.rfind('.')+1):]} not allowed")
                         continue
                 except Exception as e:
@@ -168,6 +168,9 @@ class RedditRipper():
         True or False whether the download was successful or not
     '''
     def download_image(self, url, path):
+        if "gfycat" in url:
+            url = self.get_gyfcat_url(url)
+
         if url is not None:
             try:
                 result = req.get(url, stream=True)
