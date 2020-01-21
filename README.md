@@ -62,6 +62,7 @@ reddit_ripper.run()
 ## Dependencies
 * requests
 * bs4
+* lxml
 
 ### Install The Dependencies
 You can simply use the requirements.txt file.
