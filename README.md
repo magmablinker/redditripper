@@ -34,8 +34,8 @@ This will just call the __init__ method.
 Args:
     All args are optional.
     
-    is_verbose: is a boolean to check if verbose status messages                 should be printed. The default value is False.
-    subreddit_file: the file where the subreddits are stored. The                    default value is 'subreddits.txt'
+    is_verbose: is a boolean to check if verbose status messages should be printed. The default value is False.
+    subreddit_file: the file where the subreddits are stored. The default value is 'subreddits.txt'fic
     category: the category, can be 'hot', 'top' and new.
     limit: the amount of posts you want to fetch per subreddit.
 
