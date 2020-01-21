@@ -17,10 +17,11 @@ class ArgParser():
 
     
     def add_arguments(self):
-        self.parser.add_argument('--verbose', action='store_true', help='Print verbose status messages')
-        self.parser.add_argument('-f', "--subreddit_file", help='The file in which the subreddits are stored')
-        self.parser.add_argument('-c', "--category", help='The category, can be hot, top and new')
-        self.parser.add_argument("-l", "--limit", help='The amount of posts you want to fetch per subreddit. Can be from 1 to 100')
+        self.parser.add_argument('--verbose', action='store_true', help='Print verbose status messages. The default value is False')
+        self.parser.add_argument('-f', "--subreddit_file", help='The file in which the subreddits are stored. The default value is "subreddits.txt"')
+        self.parser.add_argument('-c', "--category", help='The category, can be hot, top and new. The default value is "hot"')
+        self.parser.add_argument("-l", "--limit", help='The amount of posts you want to fetch per subreddit. Can be from 1 to 100. The default value is 100.')
+        self.parser.add_argument("-o", "--image_output_dir", help='The output directory for downloads. Default is "downloads/"')
 
 
     def validate_args(self):
@@ -55,12 +56,18 @@ class ArgParser():
         else:
             self.args.limit = 100
 
+        if self.args.image_output_dir is not None:
+            if not os.path.exists(self.args.image_output_dir) or not os.path.isdir(self.args.image_output_dir):
+                print("[-] Invalid image output directory. Use --help for help.")
+                exit(1)
+        else:
+            self.args.image_output_dir = "downloads/"
 
     def get_arguments(self):
        return self.args
 
 class RedditRipper():
-    def __init__(self, is_verbose = False, subreddit_file = "subreddits.txt", category = "hot", limit = 100):
+    def __init__(self, is_verbose = False, subreddit_file = "subreddits.txt", category = "hot", limit = 100, image_output_dir = "downloads/"):
         self.subreddit_file = subreddit_file
         self.subs = [ sub.rstrip("\n") for sub in open(self.subreddit_file) ]
         self.category = category
@@ -71,6 +78,8 @@ class RedditRipper():
         self.successful = 0
         self.failed = 0
         self.is_verbose = is_verbose
+        self.image_output_dir = image_output_dir
+        self.gfycat_failed = 0
 
 
     '''Start the download process'''
@@ -125,7 +134,7 @@ class RedditRipper():
     '''
     def make_sub_dirs(self):
         for sub in self.subs:
-            path = "images/%s" %(sub)
+            path = f"{self.image_output_dir}/{sub}"
             if not os.path.exists(path):
                 self.verbose_mode(f"[+] Making dir for {sub}")
                 os.makedirs(path)
@@ -152,10 +161,10 @@ class RedditRipper():
 
             for url in self.data[sub]:
                 filename = url[(url.rfind("/")+1):]
-                path = f"images/{sub}/{filename}"
+                path = f"{self.image_output_dir}/{sub}/{filename}"
 
                 if os.path.exists(path):
-                    self.verbose_mode(f"[?] File {filename} exists")
+                    self.verbose_mode(f"[?] File {filename} exists, skipping it")
                     continue
 
                 try:
@@ -187,9 +196,17 @@ class RedditRipper():
         True or False whether the download was successful or not
     '''
     def download_image(self, url, path):
-        if "gfycat" in url:
+        if "gfycat" in url and self.gfycat_failed < 10:
             url = self.get_gyfcat_url(url)
             path += ".mp4"
+        elif self.gfycat_failed == 10:
+            print("*******************************",
+                  "[!] gfycat rate limit detected ",
+                  "[!] stopping download of gfycat",
+                  "[!] urls.                      ", 
+                  "*******************************", sep="\n")
+        elif self.gfycat_failed > 10:
+            return False
 
         if url is not None:
             try:
@@ -218,7 +235,10 @@ class RedditRipper():
         else:
             return False
 
+    '''
+    This method wi
 
+    '''
     def get_gyfcat_url(self, url):
         self.verbose_mode("[?] Detected gfycat URL")
 
@@ -231,10 +251,12 @@ class RedditRipper():
             result = req.get(url)
         except Exception as e:
             self.verbose_mode(f"[-] Exception: failed to fetch gfycat data for url {url}")
+            self.gfycat_failed += 1
             return None
 
         if result.status_code != 200:
             self.verbose_mode(f"[-] Failed to fetch gfycat data for url {url} response code {result.status_code}")
+            self.gfycat_failed += 1
             return None
 
         soup = BS(result.text, features="lxml")
