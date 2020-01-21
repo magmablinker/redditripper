@@ -9,11 +9,8 @@ from math import ceil
 class ArgParser():
     def __init__(self):
         self.parser = argparse.ArgumentParser()
-
         self.add_arguments()
-
         self.args = self.parser.parse_args()
-
         self.validate_args()
 
     
@@ -33,8 +30,7 @@ class ArgParser():
 
         if self.args.category is not None:
             if self.args.category not in [ "hot", "top", "new" ]:
-                print("Invalid value for the category. Allowed values are 'hot', 'top' and 'new'.",
-                    "Please use --help for further information on this argument", 
+                print("Invalid value for the category. Allowed values are 'hot', 'top' and 'new'.", 
                     "", sep="\n")
                 exit(1)
         else:
@@ -46,7 +42,8 @@ class ArgParser():
 
 class RedditRipper():
     def __init__(self, is_verbose = False, subreddit_file = "subreddits.txt", category = "hot"):
-        self.subs = [ sub.rstrip("\n") for sub in open(subreddit_file) ]
+        self.subreddit_file = subreddit_file
+        self.subs = [ sub.rstrip("\n") for sub in open(self.subreddit_file) ]
         self.category = category
         self.data = {}
         self.file_type_list = [ "jpg", "jpeg", "png", "gif" ]
@@ -70,6 +67,12 @@ class RedditRipper():
     specified by the command line argument
     '''
     def get_posts_by_sub(self):
+        if len(self.subs) < 1:
+            print("[-] No subreddits found!",
+                  "[-] Please add subreddits to the subreddits.txt file or specify another file.",
+                  "[?] Use redditripper.py -h or --help to get help", sep='\n')
+            exit(1)
+
         for sub in self.subs:
 
             print(f"[+] Getting {self.category} posts for sub {sub}")
@@ -83,6 +86,11 @@ class RedditRipper():
                     continue
 
                 res = res.json()
+
+                if len(res['data']['children']) < 1:
+                    print(f"[-] Subreddit {sub} not found.")
+                    continue
+
             except Exception as e:
                 print(f"[-] Fetching data for {sub} failed")
                 continue
@@ -121,10 +129,6 @@ class RedditRipper():
 
         for sub in self.subs:
             t = []
-
-            if sub not in self.data:
-                print(f"[-] No data found for subreddit {sub}, skipping it")
-                continue
 
             for url in self.data[sub]:
                 filename = url[(url.rfind("/")+1):]
@@ -214,7 +218,6 @@ def main():
         os.system("cls")
     else:
         os.system("clear")
-
 
     argparser = ArgParser()
     args = argparser.get_arguments()
