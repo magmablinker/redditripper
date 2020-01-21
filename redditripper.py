@@ -202,19 +202,23 @@ class RedditRipper():
 
     def get_gyfcat_url(self, url):
         self.verbose_mode("[?] Detected gfycat URL")
+        self.verbose_mode("[?] Sleeping for 1s to avoid rate limit")
+        sleep(1)
 
         try:
             result = req.get(url)
         except Exception as e:
+            self.verbose_mode(f"[-] Exception: failed to fetch gfycat data for url {url}")
             return None
 
         if result.status_code != 200:
+            self.verbose_mode(f"[-] Failed to fetch gfycat data for url {url} response code {result.status_code}")
             return None
 
-        soup = BS(result.text)
+        soup = BS(result.text, features="lxml")
         video = soup.find("source", attrs={'type': 'video/mp4'})
-   
-        return video['src']
+
+        return video.get('src')
 
     '''
     This method prints verbose messages if enabled
