@@ -19,6 +19,7 @@ class ArgParser():
         self.parser.add_argument('--verbose', action='store_true', help='Print verbose status messages')
         self.parser.add_argument('-f', "--subreddit_file", help='The file in which the subreddits are stored')
         self.parser.add_argument('-c', "--category", help='The category, can be hot, top and new')
+        self.parser.add_argument("-l", "--limit", help='The amount of posts you want to fetch per subreddit. Can be from 1-100')
 
 
     def validate_args(self):
@@ -37,15 +38,32 @@ class ArgParser():
         else:
             self.args.category = "hot"
 
+        if self.args.limit is not None:
+            try:
+                self.args.limit = int(self.args.limit)
+            except Exception as e:
+                print("[-] The post limit has to be a number!")
+                exit(1)
+
+            if self.args.limit < 1:
+                print("[-] The minimal allowed limit is 1.")
+                exit(1)
+            elif self.args.limit > 100:
+                print("[-] The maximal allowed limit is 100.")
+                exit(1)
+        else:
+            self.args.limit = 100
+
 
     def get_arguments(self):
        return self.args
 
 class RedditRipper():
-    def __init__(self, is_verbose = False, subreddit_file = "subreddits.txt", category = "hot"):
+    def __init__(self, is_verbose = False, subreddit_file = "subreddits.txt", category = "hot", limit = 100):
         self.subreddit_file = subreddit_file
         self.subs = [ sub.rstrip("\n") for sub in open(self.subreddit_file) ]
         self.category = category
+        self.limit = limit
         self.data = {}
         self.file_type_list = [ "jpg", "jpeg", "png", "gif", "mp4" ]
         self.files = 0
@@ -77,7 +95,7 @@ class RedditRipper():
         for sub in self.subs:
 
             print(f"[+] Getting {self.category} posts for sub {sub}")
-            url = f"http://api.reddit.com/r/{sub}/{self.category}?limit=100"
+            url = f"http://api.reddit.com/r/{sub}/{self.category}?limit={self.limit}"
 
             try:
                 res = req.get(url, headers={'User-agent': 'epic image downloader'})
@@ -250,7 +268,7 @@ def main():
     argparser = ArgParser()
     args = argparser.get_arguments()
 
-    reddit_ripper = RedditRipper(args.verbose, args.subreddit_file, args.category)
+    reddit_ripper = RedditRipper(args.verbose, args.subreddit_file, args.category, args.limit)
 
     reddit_ripper.run()
 
