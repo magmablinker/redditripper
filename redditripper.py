@@ -20,7 +20,7 @@ class ArgParser():
         self.parser.add_argument('--verbose', action='store_true', help='Print verbose status messages')
         self.parser.add_argument('-f', "--subreddit_file", help='The file in which the subreddits are stored')
         self.parser.add_argument('-c', "--category", help='The category, can be hot, top and new')
-        self.parser.add_argument("-l", "--limit", help='The amount of posts you want to fetch per subreddit. Can be from 1-100')
+        self.parser.add_argument("-l", "--limit", help='The amount of posts you want to fetch per subreddit. Can be from 1 to 100')
 
 
     def validate_args(self):
