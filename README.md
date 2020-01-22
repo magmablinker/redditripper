@@ -44,7 +44,7 @@ Args:
     subreddit_file: the file where the subreddits are stored. The default value is 'subreddits.txt'fic
     category: the category, can be 'hot', 'top' and new.
     limit: the amount of posts you want to fetch per subreddit.
-    image_output_dir = the directory in which the subreddit directories and downloads are located. The default is 'downloads/'
+    image_output_dir: the directory in which the subreddit directories and downloads are located. The default is 'downloads/'
 
 Returns:
     The instance of the RedditRipper class
