@@ -233,6 +233,7 @@ class RedditRipper():
             self.successful += 1
             return True
         else:
+            self.failed += 1
             return False
 
     '''
@@ -254,7 +255,7 @@ class RedditRipper():
         sleep(sleeptime)
 
         try:
-            result = req.get(url)
+            result = req.get(url, timeout=2)
         except Exception as e:
             self.verbose_mode(f"[-] Exception: failed to fetch gfycat data for url {url}")
             self.gfycat_failed += 1
@@ -268,7 +269,14 @@ class RedditRipper():
         soup = BS(result.text, features="lxml")
         video = soup.find("source", attrs={'type': 'video/mp4'})
 
-        return video.get('src')
+        try:
+            video = video.get('src')
+        except Exception as e:
+            self.verbose_mode(f"[-] Failed to fetch the source for the url {url}")
+            self.gfycat_failed += 1
+            video = None
+
+        return video
 
     '''
     This method prints verbose messages if enabled
