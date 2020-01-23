@@ -6,7 +6,7 @@ import argparse
 from bs4 import BeautifulSoup as BS
 from time import time, sleep
 from math import ceil
-from random import randrange
+from random import uniform
 
 class ArgParser():
     def __init__(self):
@@ -249,7 +249,7 @@ class RedditRipper():
     def get_gyfcat_url(self, url):
         self.verbose_mode("[?] Detected gfycat URL")
 
-        sleeptime = randrange(1, 4)
+        sleeptime = uniform(1, 4)
 
         self.verbose_mode(f"[?] Sleeping for {sleeptime}s to avoid rate limit")
         sleep(sleeptime)
