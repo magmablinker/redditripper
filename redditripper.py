@@ -267,10 +267,15 @@ class RedditRipper():
             return None
 
         soup = BS(result.text, features="lxml")
-        video = soup.find("source", attrs={'type': 'video/mp4'})
+        videos = soup.findAll("source", attrs={'type': 'video/mp4'})
 
         try:
-            video = video.get('src')
+            video = videos[0].get('src')
+
+            # Find the HD URL
+            for v in videos:
+                if "giant" in v.get('src'):
+                    video = v.get('src')
         except Exception as e:
             self.verbose_mode(f"[-] Failed to fetch the source for the url {url}")
             self.gfycat_failed += 1
