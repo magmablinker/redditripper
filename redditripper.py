@@ -237,7 +237,7 @@ class RedditRipper():
             return False
 
     '''
-    This method downloads a video from gfycat.
+    This method gets the source url for gfycat downloads.
 
     Args:
         url: the url to the gfycat video.
