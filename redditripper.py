@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup as BS
 from time import time, sleep
 from math import ceil
 from random import uniform
+from pprint import pprint
 
 class ArgParser():
     def __init__(self):
@@ -20,7 +21,7 @@ class ArgParser():
         self.parser.add_argument('--verbose', action='store_true', help='Print verbose status messages. The default value is False')
         self.parser.add_argument('-f', "--subreddit_file", help='The file in which the subreddits are stored. The default value is "subreddits.txt"')
         self.parser.add_argument('-c', "--category", help='The category, can be hot, top and new. The default value is "hot"')
-        self.parser.add_argument("-l", "--limit", help='The amount of posts you want to fetch per subreddit. Can be from 1 to 100. The default value is 100.')
+        self.parser.add_argument("-l", "--limit", help='The amount of posts you want to fetch per subreddit. Can be from 1 to 1000. The default value is 100.')
         self.parser.add_argument("-o", "--image_output_dir", help='The output directory for downloads. Default is "downloads/"')
 
 
@@ -50,8 +51,8 @@ class ArgParser():
             if self.args.limit < 1:
                 print("[-] The minimal allowed limit is 1.")
                 exit(1)
-            elif self.args.limit > 100:
-                print("[-] The maximal allowed limit is 100.")
+            elif self.args.limit > 1000:
+                print("[-] The maximal allowed limit is 1000.")
                 exit(1)
         else:
             self.args.limit = 100
@@ -105,27 +106,54 @@ class RedditRipper():
         for sub in self.subs:
 
             print(f"[+] Getting {self.category} posts for sub {sub}")
-            url = f"http://api.reddit.com/r/{sub}/{self.category}?limit={self.limit}"
 
-            try:
-                res = req.get(url, headers={'User-agent': 'epic image downloader'})
+            results = 0
 
-                if res.status_code != 200:
+            limit = self.limit
+
+            if limit > 100:
+                limit = 100
+
+            after = None
+            before = None
+
+            self.data[sub] = []
+
+            while results < self.limit:
+                url = f"http://api.reddit.com/r/{sub}/{self.category}?count={limit}?show=all&t=all"
+
+                if after is not None:
+                    url = f"{url}&after={after}"
+
+                if before is not None:
+                    url = f"{url}&before={before}"
+                    
+                try:
+                    res = req.get(url, headers={'User-agent': 'epic image downloader'})
+
+                    if res.status_code != 200:
+                        print(f"[-] Fetching data for {sub} failed")
+                        results += limit
+                        break
+
+                    res = res.json()
+
+                    if len(res['data']['children']) < 1:
+                        print(f"[-] Subreddit {sub} not found.")
+                        results += limit
+                        break
+                    
+                    results += limit
+                except Exception as e:
                     print(f"[-] Fetching data for {sub} failed")
-                    continue
+                    results += limit
+                    break
 
-                res = res.json()
-
-                if len(res['data']['children']) < 1:
-                    print(f"[-] Subreddit {sub} not found.")
-                    continue
-
-            except Exception as e:
-                print(f"[-] Fetching data for {sub} failed")
-                continue
-
-            self.data[sub] = [ data['data']['url'] for data in res['data']['children'] ]
-            self.files += len(self.data[sub])
+                after = res['data']['after']
+                before = res['data']['before']
+                new_data = [ data['data']['url'] for data in res['data']['children'] ]
+                self.data[sub] = self.data[sub] + new_data
+                self.files += len(new_data)
 
 
     '''
